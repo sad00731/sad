@@ -25,7 +25,7 @@ public class AchievementController
     AchievementRepository achievementRepository;
 
     @PostMapping(value = "/achievement")
-    public Boolean addAchievement(@RequestBody ExAchievement exAchievement,@RequestParam("file") MultipartFile file , HttpServletRequest request)
+    public Boolean addAchievement(@RequestBody ExAchievement exAchievement)
     {
         Achievement achievement=new Achievement();
         Expert expert=expertRepository.getByExpertId(exAchievement.getExpertId());
@@ -56,7 +56,7 @@ public class AchievementController
             {
                 achievement.setPoint(0);
             }
-            String downloadUrl=upLoadAchievement(file,request);
+            String downloadUrl="F:/upload/"+exAchievement.getAchievementName();
             achievement.setDownloadUrl(downloadUrl);
             achievementRepository.save(achievement);
             return true;
@@ -66,8 +66,35 @@ public class AchievementController
             return false;
         }
     }
+    @PostMapping(value="achievement/update")
+    public  Achievement updateAchievement(@RequestBody ExAchievement exAchievement)
+    {
+        Achievement achievement=achievementRepository.findAchievementByAchievementId(exAchievement.getAchievementId());
+        if(achievement!=null)
+        {
+            if(!exAchievement.getIntroduction().equals(""))
+                achievement.setIntroduction(exAchievement.getIntroduction());
+            if( exAchievement.getType()!=null )
+                achievement.setType(exAchievement.getType());
+            if(!exAchievement.getAchievementName().equals(""))
+            {
+                achievement.setAchievementName(exAchievement.getAchievementName());
+            }
+            if( exAchievement.getPoint()!=null )
+            {
+                achievement.setPoint(exAchievement.getPoint());
+            }
+            return achievementRepository.save(achievement);
+        }
+        else
+        {
+            Achievement achievement1=new Achievement();
+            achievement1.setAchievementId(exAchievement.getAchievementId());
+            return achievement1;
+        }
+    }
     @PostMapping(value = "achievement/upload")
-    public String upLoadAchievement(@RequestParam("file") MultipartFile file , HttpServletRequest request)
+    public String upLoadAchievement(@RequestParam("file") MultipartFile file,HttpServletRequest request)
     {
         if (!file.isEmpty()) {
             String saveFileName = file.getOriginalFilename();
@@ -92,35 +119,7 @@ public class AchievementController
         }
         return "";
     }
-
-    @PostMapping(value="achievement/update")
-    public  Achievement updateAchievement(@RequestBody ExAchievement exAchievement)
-    {
-        Achievement achievement=achievementRepository.findAchievementByAchievementId(exAchievement.getAchievementId());
-        if(achievement!=null)
-        {
-            if( exAchievement.getIntroduction()!=null )
-                achievement.setIntroduction(exAchievement.getIntroduction());
-            if( exAchievement.getType()!=null )
-                achievement.setType(exAchievement.getType());
-            if(exAchievement.getAchievementName()!=null )
-            {
-                achievement.setAchievementName(exAchievement.getAchievementName());
-            }
-            if( exAchievement.getPoint()!=null )
-            {
-                achievement.setPoint(exAchievement.getPoint());
-            }
-            return achievementRepository.save(achievement);
-        }
-        else
-        {
-            Achievement achievement1=new Achievement();
-            achievement1.setAchievementId(exAchievement.getAchievementId());
-            return achievement1;
-        }
-    }
-    @DeleteMapping(value = "achievement/delete")
+    @GetMapping(value = "achievement/delete")
     public Boolean deleteAchievement(@RequestParam("achievementId") int achievementId)
     {
         try {
@@ -131,6 +130,7 @@ public class AchievementController
             return false;
         }
     }
+
 
     @GetMapping(value = "/achievement/expert/{expertId}")
     public List<Achievement> getAchievementByExpert( @PathVariable("expertId") int expertId)
